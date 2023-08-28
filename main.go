@@ -1,48 +1,94 @@
 package main
 
 import (
+	"github.com/betology/GoSelva/models"
+
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func getPlants(c *gin.Context) {
-	plants := models.getPlants()
+func main() {
 
-	if plants == nil || len(plants) == 0 {
+	router := gin.Default()
+
+	router.GET("/products", getProducts)
+
+	router.GET("/product/:code", getProduct)
+
+	router.POST("/products", addProduct)
+
+	router.Run("localhost:8083")
+}
+
+/*
+// curl command to get all products
+
+	curl http://localhost:8083/products \
+	    --include \
+	    --header "Content-Type: application/json" \
+	    --request "GET"
+*/
+func getProducts(c *gin.Context) {
+
+	products := models.GetProducts()
+
+	if products == nil || len(products) == 0 {
+
 		c.AbortWithStatus(http.StatusNotFound)
+
 	} else {
-		c.IndentedJSON(http.StatusOK, plants)
+
+		c.IndentedJSON(http.StatusOK, products)
+
 	}
 }
 
-func getPlant(c *gin.Context) {
+/*
+// curl command to get a product by code
+
+	curl http://localhost:8083/product/P0111 \
+	    --include \
+	    --header "Content-Type: application/json" \
+	    --request "GET"
+*/
+func getProduct(c *gin.Context) {
+
 	code := c.Param("code")
 
-	plant := models.GetProduct(code)
+	product := models.GetProduct(code)
 
-	if plant == nil {
+	if product == nil {
 		c.AbortWithStatus(http.StatusNotFound)
+
 	} else {
-		c.IndentedJSON(http.StatusOK, plant)
+
+		c.IndentedJSON(http.StatusOK, product)
+
 	}
+
 }
 
-func addPlant(c *gin.Context) {
-	var plant models.Plant
+/*
+// e.g. curl command to test adding a new product
 
-	if err := c.BindJSON(&plant); err != nil {
+	curl http://localhost:8083/products \
+	    --include \
+	    --header "Content-Type: application/json" \
+	    --request "POST" \
+	    --data '{"code": "P1114","name": "MacBook Air M1","qty": 10}'
+*/
+func addProduct(c *gin.Context) {
+
+	var prod models.Product
+
+	if err := c.BindJSON(&prod); err != nil {
+
 		c.AbortWithStatus(http.StatusBadRequest)
 	} else {
-		models.AddPlant(plant)
-		c.IndentedJSON(http.StatusCreated, plant)
-	}
-}
 
-func main() {
-	router := gin.Default()
-	router.GET("/plants", getPlants)
-	router.GET("/plant/:code", getPlant)
-	router.POST("/plants", addPlant)
-	router.Run("localhost:8083")
+		models.AddProduct(prod)
+		c.IndentedJSON(http.StatusCreated, prod)
+	}
+
 }
