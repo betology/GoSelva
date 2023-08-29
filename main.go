@@ -2,11 +2,14 @@ package main
 
 import (
 	"github.com/betology/GoSelva/models"
-
+	"github.com/betology/GoSelva/initializers"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
+
+func init() {
+	initializers.LoadEnvVariables()
+}
 
 func main() {
 
